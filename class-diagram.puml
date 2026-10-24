@@ -1,0 +1,160 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+title AUK Ride - Draft Class Diagram (Part 1)
+
+package "Controllers (GRASP)" {
+  class RideController {
+    + postRide(form): Ride
+    + search(origin, destination, date): List<Ride>
+  }
+  class BookingController {
+    + bookSeat(rideId: String, passenger: User): Booking
+    + cancelBooking(bookingId: String): void
+  }
+}
+
+package "Services" {
+  class AuthService {
+    + register(name, email, password): User
+    + login(email, password): User
+  }
+  class RideService {
+    + postRide(driver: User, builder: RideBuilder): Ride
+    + search(origin, destination, date): List<Ride>
+    + cancelRide(rideId: String): void
+  }
+  class BookingService {
+    + bookSeat(rideId: String, passenger: User): Booking
+    + cancelBooking(bookingId: String): void
+  }
+}
+
+package "Domain" {
+  class User {
+    - id: String
+    - name: String
+    - aukEmail: String
+    - phone: String
+  }
+  class Vehicle {
+    - plate: String
+    - model: String
+    - seats: int
+  }
+  class Ride {
+    - id: String
+    - origin: String
+    - destination: String
+    - departureTime: DateTime
+    - totalSeats: int
+    - pricePerSeat: double
+    - status: RideStatus
+    + book(passenger: User): Booking
+    + cancel(): void
+    + availableSeats(): int
+  }
+  enum RideStatus {
+    OPEN
+    FULL
+    COMPLETED
+    CANCELLED
+  }
+  class Booking {
+    - id: String
+    - status: BookingStatus
+    + cancel(): void
+  }
+  enum BookingStatus {
+    CONFIRMED
+    CANCELLED
+  }
+  class Rating {
+    - score: int
+    - comment: String
+  }
+}
+
+package "Builder" {
+  class RideBuilder {
+    + from(origin: String): RideBuilder
+    + to(destination: String): RideBuilder
+    + departingAt(time: DateTime): RideBuilder
+    + seats(n: int): RideBuilder
+    + price(p: double): RideBuilder
+    + withStop(place: String): RideBuilder
+    + recurringWeekly(): RideBuilder
+    + build(): Ride
+  }
+}
+
+package "Storage (DIP + Factory Method)" {
+  interface RideRepository {
+    + save(ride: Ride): void
+    + findById(id: String): Ride
+    + findAll(): List<Ride>
+  }
+  interface BookingRepository {
+    + save(booking: Booking): void
+    + findById(id: String): Booking
+  }
+  interface RepositoryFactory {
+    + createRideRepository(): RideRepository
+    + createBookingRepository(): BookingRepository
+  }
+  class InMemoryRepositoryFactory
+  class InMemoryRideRepository
+  class InMemoryBookingRepository
+}
+
+package "Notifications (Adapter)" {
+  interface NotificationSender {
+    + send(to: User, message: String): void
+  }
+  class EmailSender
+  class SmsSenderAdapter {
+    - client: ExternalSmsClient
+    + send(to: User, message: String): void
+  }
+  class ExternalSmsClient <<third-party>> {
+    + sendText(phoneNumber: String, body: String): boolean
+  }
+}
+
+' controllers -> services
+RideController "1" --> "1" RideService
+BookingController "1" --> "1" BookingService
+RideController ..> RideBuilder : uses
+
+' services -> abstractions
+AuthService ..> User : creates
+RideService "1" --> "1" RideRepository
+RideService ..> RideBuilder : uses
+BookingService "1" --> "1" RideRepository
+BookingService "1" --> "1" BookingRepository
+BookingService "1" --> "1..*" NotificationSender
+
+' domain
+User "1" -- "0..1" Vehicle : owns >
+Ride "0..*" --> "1" User : driver
+Ride "1" *-- "0..*" Booking
+Booking "0..*" --> "1" User : passenger
+Ride --> RideStatus
+Booking --> BookingStatus
+Rating "0..*" --> "1" Ride
+Rating "0..*" --> "1" User : given by
+Rating "0..*" --> "1" User : given to
+RideBuilder ..> Ride : creates
+
+' storage
+RideRepository <|.. InMemoryRideRepository
+BookingRepository <|.. InMemoryBookingRepository
+RepositoryFactory <|.. InMemoryRepositoryFactory
+InMemoryRepositoryFactory ..> InMemoryRideRepository : creates
+InMemoryRepositoryFactory ..> InMemoryBookingRepository : creates
+
+' notifications
+NotificationSender <|.. EmailSender
+NotificationSender <|.. SmsSenderAdapter
+SmsSenderAdapter "1" --> "1" ExternalSmsClient
+@enduml
