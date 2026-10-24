@@ -1,4 +1,4 @@
-@startuml
+@startuml sequence-search-rides 
 title AUK Ride - Passenger searches for a ride
 
 actor Passenger
