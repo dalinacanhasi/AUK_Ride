@@ -1,0 +1,32 @@
+@startuml
+title AUK Ride - Passenger searches for a ride
+
+actor Passenger
+participant ":SearchView" as UI
+participant ":RideController" as Ctrl
+participant ":RideService" as Svc
+participant ":RideRepository" as Repo
+participant "ride:Ride" as Ride
+
+Passenger -> UI : enter origin, destination, date
+UI -> Ctrl : search(origin, destination, date)
+Ctrl -> Svc : search(origin, destination, date)
+Svc -> Repo : findAll()
+Repo --> Svc : rides
+
+loop for each ride in rides
+  Svc -> Ride : availableSeats()
+  Ride --> Svc : seats
+  opt route and date match, status OPEN, seats > 0
+    Svc -> Svc : add ride to results
+  end
+end
+
+Svc --> Ctrl : results
+Ctrl --> UI : results
+alt results is not empty
+  UI --> Passenger : list of matching rides
+else no matches
+  UI --> Passenger : "No rides found for this route and date"
+end
+@enduml
