@@ -1,0 +1,45 @@
+@startuml
+title AUK Ride - Driver posts a ride
+
+actor Driver
+participant ":PostRideView" as UI
+participant ":RideController" as Ctrl
+participant "builder:RideBuilder" as Builder
+participant ":RideService" as Svc
+participant ":RideRepository" as Repo
+
+Driver -> UI : fill in ride form, click "Post"
+UI -> Ctrl : postRide(form)
+create Builder
+Ctrl -> Builder : new RideBuilder()
+Ctrl -> Builder : from(origin)
+Ctrl -> Builder : to(destination)
+Ctrl -> Builder : departingAt(time)
+Ctrl -> Builder : seats(n)
+Ctrl -> Builder : price(p)
+opt driver added stops
+  loop for each stop
+    Ctrl -> Builder : withStop(place)
+  end
+end
+opt driver chose weekly ride
+  Ctrl -> Builder : recurringWeekly()
+end
+Ctrl -> Svc : postRide(driver, builder)
+Svc -> Builder : build()
+
+alt all required details present
+  create participant "ride:Ride" as Ride
+  Builder -> Ride : new Ride(...) (status OPEN)
+  Builder --> Svc : ride
+  Svc -> Repo : save(ride)
+  Svc --> Ctrl : ride
+  Ctrl --> UI : ride
+  UI --> Driver : "Ride posted"
+else a required detail is missing
+  Builder --> Svc : error "missing required detail"
+  Svc --> Ctrl : error
+  Ctrl --> UI : error
+  UI --> Driver : "Please complete the required fields"
+end
+@enduml
