@@ -30,9 +30,9 @@ The diagrams are PlantUML text, so they are versioned and reviewed together with
 The implementation language (Java or JavaScript) has not been decided yet; the design is language-neutral.
 
 ## Team
+ZeroDelay
 
-- [Member 1]
-- [Member 2]
-- [Member 3]
-- [Member 4]
-- [Member 5]
+- Diella Doli
+- Amela Kajtazi
+- Dalina Canhasi
+- Elisa Braha
