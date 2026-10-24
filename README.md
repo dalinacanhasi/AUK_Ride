@@ -22,7 +22,8 @@ Team project for **SWEN-383 Software Design Principles and Patterns** (RIT Kosov
 ## Design
 
 - Class diagram: [`docs/uml/class-diagram.puml`](docs/uml/class-diagram.puml)
-- Sequence diagram, passenger books a seat: [`docs/uml/sequence-book-seat.puml`](docs/uml/sequence-book-seat.puml)
+- Sequence diagrams: [book a seat](docs/uml/sequence-book-seat.puml), [post a ride](docs/uml/sequence-post-ride.puml), [search rides](docs/uml/sequence-search-rides.puml)
+- Design risks: [1](docs/design-risk-1.md), [2](docs/design-risk-2.md), [3](docs/design-risk-3.md)
 - Anticipated design risks and planned patterns: [`docs/design-risks.md`](docs/design-risks.md)
 
 The diagrams are PlantUML text, so they are versioned and reviewed together with the code. Open them in VS Code with the PlantUML extension (Alt+D to preview).
