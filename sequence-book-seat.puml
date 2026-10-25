@@ -1,0 +1,38 @@
+@startuml sequence-book-seat 
+title AUK Ride - Passenger books a seat
+
+actor Passenger
+participant ":RideView" as UI
+participant ":BookingController" as Ctrl
+participant ":BookingService" as Svc
+participant ":RideRepository" as RideRepo
+participant "ride:Ride" as Ride
+participant ":BookingRepository" as BookRepo
+participant ":NotificationSender" as Notify
+
+Passenger -> UI : click "Book seat"
+UI -> Ctrl : bookSeat(rideId, passenger)
+Ctrl -> Svc : bookSeat(rideId, passenger)
+Svc -> RideRepo : findById(rideId)
+RideRepo --> Svc : ride
+Svc -> Ride : book(passenger)
+
+alt ride.status == OPEN
+  Ride -> Ride : create Booking (CONFIRMED)
+  opt last free seat taken
+    Ride -> Ride : status = FULL
+  end
+  Ride --> Svc : booking
+  Svc -> BookRepo : save(booking)
+  Svc -> RideRepo : save(ride)
+  Svc ->> Notify : send(driver, "New passenger booked")
+  Svc --> Ctrl : booking
+  Ctrl --> UI : booking
+  UI --> Passenger : "Seat booked"
+else FULL, COMPLETED or CANCELLED
+  Ride --> Svc : error "ride not open"
+  Svc --> Ctrl : error
+  Ctrl --> UI : error
+  UI --> Passenger : "This ride can't be booked"
+end
+@enduml
