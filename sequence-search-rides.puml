@@ -1,5 +1,5 @@
 @startuml sequence-search-rides 
-title AUK Ride - Passenger searches for a ride
+title AUK Ride - Passenger Searches for Available Rides
 
 actor Passenger
 participant ":SearchView" as UI
